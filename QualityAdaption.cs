@@ -126,7 +126,7 @@ namespace Net.Xeophin.Utils
             Debug.Log ("Framerate is stable now, removing automatic adaptation.");
           }
           Destroy (this);
-          return null;
+          yield break;
         }
   
         // Reset moving average
