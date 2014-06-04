@@ -11,6 +11,7 @@
 /// </remarks>
 public sealed partial class EventsBroadcaster:GameEventsBroadcaster<EventsBroadcaster>
 {
+  // Analysis disable once EmptyConstructor
   public EventsBroadcaster ()
   {
   }

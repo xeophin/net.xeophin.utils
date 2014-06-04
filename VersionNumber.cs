@@ -17,7 +17,7 @@ namespace Net.Xeophin.Utils
     /// <summary>
     /// Can be set to true, in that case the version number will be shown in bottom right of the screen
     /// </summary>
-    public bool ShowVersionInformation = false;
+    public bool ShowVersionInformation;
     /// <summary>
     /// Show the version during the first 20 seconds.
     /// </summary>

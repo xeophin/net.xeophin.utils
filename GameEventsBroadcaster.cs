@@ -13,6 +13,7 @@ namespace Net.Xeophin.Utils
   {
     #region Singleton
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage ("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
     static readonly T instance = new T ();
 
     protected GameEventsBroadcaster ()
