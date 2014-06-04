@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System;
 
-namespace Com.YouRehab
+namespace Net.Xeophin.Utils
 {
   /// <summary>
   /// Class that catches all logging related events and turns them into logging data.
