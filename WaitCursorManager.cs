@@ -16,33 +16,38 @@ namespace Net.Xeophin.Utils
     readonly CursorMode mode = CursorMode.Auto;
     Vector2 center;
 
+
     void Awake ()
     {
       DontDestroyOnLoad (this);
       center = new Vector2 (CursorTexture.width / 2, CursorTexture.height / 2);
     }
 
+
     void Start ()
     {
-      EventsBroadcaster.Instance.GameStateChanged += HandleGameStateChanged;
+      EventsBroadcaster.Instance.LevelLoadingStarts += HandleLevelLoadingStarts;
+      EventsBroadcaster.Instance.LevelLoadingComplete += HandleLevelLoadingComplete;
     }
 
-    void HandleGameStateChanged (object sender, GameStateEventArgs e)
+
+    void HandleLevelLoadingComplete (object sender, GameStateEventArgs e)
     {
-      switch (e.NewState) {
-      case GameState.LevelLoadingStarts:
-        Cursor.SetCursor (CursorTexture, center, mode);
-        break;
-  
-      case GameState.LevelLoadingComplete:
-        Cursor.SetCursor (null, Vector2.zero, mode);
-        break;
-      }
+      Cursor.SetCursor (null, Vector2.zero, mode);
     }
+
+
+    void HandleLevelLoadingStarts (object sender, GameStateEventArgs e)
+    {
+      Cursor.SetCursor (CursorTexture, center, mode);
+    }
+
+
 
     void OnDestroy ()
     {
-      EventsBroadcaster.Instance.GameStateChanged -= HandleGameStateChanged;
+      EventsBroadcaster.Instance.LevelLoadingStarts -= HandleLevelLoadingStarts;
+      EventsBroadcaster.Instance.LevelLoadingComplete -= HandleLevelLoadingComplete;
     }
   }
 }
