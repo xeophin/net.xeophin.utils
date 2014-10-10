@@ -29,7 +29,7 @@ namespace Net.Xeophin.Utils
     /// </summary>
     Rect position = new Rect (0, 0, 100, 20);
 
-    VersionNumberController controller;
+    protected VersionNumberController Controller;
 
     #region MonoBehaviour
     void Start ()
@@ -37,7 +37,7 @@ namespace Net.Xeophin.Utils
       DontDestroyOnLoad (this);
 
       // Initiate the controller
-      controller = new VersionNumberController (this);
+      Controller = new VersionNumberController (this);
   
       // Log current version in log file
       Debug.Log (string.Format ("[VersionNumber] Currently running version is {0}", Label));
