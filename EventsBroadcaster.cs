@@ -11,9 +11,6 @@
 /// </remarks>
 public sealed partial class EventsBroadcaster:GameEventsBroadcaster<EventsBroadcaster>
 {
-  public EventsBroadcaster ()
-  {
-  }
 }
 
 

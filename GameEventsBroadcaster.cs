@@ -1,5 +1,6 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
+
 
 namespace Net.Xeophin.Utils
 {
@@ -12,7 +13,14 @@ namespace Net.Xeophin.Utils
   /// \author Kaspar Manz <code@xeophin.net>
   /// \date 2014-07-03
   /// 
-  public class GameEventsBroadcaster<T> where T : GameEventsBroadcaster<T>, new()
+  /// 
+  /// \version 0.3.0
+  /// \author Kaspar Manz <code@xeophin.net>
+  /// \date 2014-09-26
+  /// <remarks>Redesigned class to use a dictionary for collecting all possible
+  /// event handlers, so I don't need to use that massive switch statement.
+  /// </remarks>
+  public class GameEventsBroadcaster<T>:IGameEventProvider where T : GameEventsBroadcaster<T>, new()
   {
     #region Singleton
 
@@ -21,12 +29,22 @@ namespace Net.Xeophin.Utils
 
     protected GameEventsBroadcaster ()
     {
+      // Setup the game state dictionary with all possible values
+      var allStates = (GameState[])Enum.GetValues (typeof(GameState));
+      foreach (var item in allStates)
+        gameStateEvents.Add (item, null);
     }
 
 
     public static T Instance { get { return instance; } }
 
     #endregion
+
+    /// <summary>
+    /// The game state events dictionary 
+    /// - this collects all event handlers for the complete enum list.
+    /// </summary>
+    Dictionary<GameState,EventHandler<GameStateEventArgs>> gameStateEvents = new Dictionary<GameState, EventHandler<GameStateEventArgs>> ();
 
     #region Game State Changes
     /// <summary>
@@ -64,183 +82,242 @@ namespace Net.Xeophin.Utils
       // General Game state event.
       OnGameStateChanged (sender, e);
 
-      // More specific events will go here
-      switch (e.NewState) {
-
-      // Pausing the game
-      case GameState.EnterPause:
-        OnPauseGame (sender, e);
-        break;
-      case GameState.ExitPause:
-        OnUnpauseGame (sender, e);
-        break;
-
-      // Getting and ceding control of the game
-      case GameState.PlayerReceivesControl:
-        OnPlayerReceivesControl (sender, e);
-        break;
-
-      case GameState.PlayerCedesControl:
-        OnPlayerCedesControl (sender, e);
-        break;
-
-      // Setup has completed
-      case GameState.SetupCompleted:
-        OnSetupComplete (sender, e);
-        break;
-
-      // Prepare shutdown
-      case GameState.PrepareShutdown:
-        OnPrepareShutdown (sender, e);
-        break;
-
-      // Level loading
-      case GameState.LevelLoadingStarts:
-        OnLevelLoadingStarts (sender, e);
-        break;
-
-      case GameState.LevelLoadingComplete:
-        OnLevelLoadingComplete (sender, e);
-        break;
-
-      // Timer functions
-      case GameState.TimerStarted:
-        OnTimerStarted (sender, e);
-        break;
-
-      case GameState.TimerCompleted:
-        OnTimerCompleted (sender, e);
-        break;
-      }
-        
+      // Call more specific events
+      var handler = gameStateEvents [e.NewState];
+      if (handler != null)
+        handler (sender, e);
 
     }
 
     #endregion
 
+
     #region Pausing the Game
-    public event EventHandler<GameStateEventArgs> PauseGame;
-
-
-    protected virtual void OnPauseGame (object sender, GameStateEventArgs e)
-    {
-      var handler = PauseGame;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> PauseGame {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.EnterPause] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.EnterPause] -= value;
+        }
+      }
     }
 
 
-    public event EventHandler<GameStateEventArgs> UnpauseGame;
-
-
-    public virtual void OnUnpauseGame (object sender, GameStateEventArgs e)
-    {
-      var handler = UnpauseGame;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> UnpauseGame {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.ExitPause] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.ExitPause] -= value;
+        }
+      }
     }
+
+
+
     #endregion
 
     #region Control over the Game
-    /// <summary>
-    /// Occurs when player receives control over the game.
-    /// </summary>
-    public event EventHandler<GameStateEventArgs> PlayerReceivesControl;
-
-
-    protected virtual void OnPlayerReceivesControl (object sender, GameStateEventArgs e)
-    {
-      var handler = PlayerReceivesControl;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> PlayerReceivesControl {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.PlayerReceivesControl] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.PlayerReceivesControl] -= value;
+        }
+      }
     }
 
 
-    /// <summary>
-    /// Occurs when player cedes control over the game.
-    /// </summary>
-    public event EventHandler<GameStateEventArgs> PlayerCedesControl;
 
-
-    protected virtual void OnPlayerCedesControl (object sender, GameStateEventArgs e)
-    {
-      var handler = PlayerCedesControl;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> PlayerCedesControl {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.PlayerCedesControl] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.PlayerCedesControl] -= value;
+        }
+      }
     }
+
+
     #endregion
 
     #region Setup Complete
-    public event EventHandler<GameStateEventArgs> SetupComplete;
-
-
-    protected virtual void OnSetupComplete (object sender, GameStateEventArgs e)
-    {
-      var handler = SetupComplete;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> SetupComplete {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.SetupCompleted] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.SetupCompleted] -= value;
+        }
+      }
     }
+
+
+
     #endregion
 
-    #region Prepare Shutdown
-    public event EventHandler<GameStateEventArgs> PrepareShutdown;
+    #region Shutdown
+    public event EventHandler<GameStateEventArgs> PrepareShutdown {
+      add {
 
-
-    protected virtual void OnPrepareShutdown (object sender, GameStateEventArgs e)
-    {
-      var handler = PrepareShutdown;
-      if (handler != null)
-        handler (sender, e);
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.PrepareShutdown] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.PrepareShutdown] -= value;
+        }
+      }
     }
+
     #endregion
 
     #region Level Loading
-    public event EventHandler<GameStateEventArgs> LevelLoadingStarts;
-
-
-    protected virtual void OnLevelLoadingStarts (object sender, GameStateEventArgs e)
-    {
-      var handler = LevelLoadingStarts;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> LevelLoadingStarts {
+      add {
+        Add (GameState.LevelLoadingStarts, value);
+      }
+      remove {
+        Remove (GameState.LevelLoadingStarts, value);
+      }
     }
 
 
-    public event EventHandler<GameStateEventArgs> LevelLoadingComplete;
 
-
-    protected virtual void OnLevelLoadingComplete (object sender, GameStateEventArgs e)
-    {
-      var handler = LevelLoadingComplete;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> LevelLoadingComplete {
+      add {
+        Add (GameState.LevelLoadingComplete, value);
+      }
+      remove {
+        Remove (GameState.LevelLoadingComplete, value);
+      }
     }
+
+   
     #endregion
 
     #region Timer
-    public event EventHandler<GameStateEventArgs> TimerStarted;
-
-
-    protected virtual void OnTimerStarted (object sender, GameStateEventArgs e)
-    {
-      var handler = TimerStarted;
-      if (handler != null)
-        handler (sender, e);
+    public event EventHandler<GameStateEventArgs> TimerStarted {
+      add {
+        Add (GameState.TimerStarted, value);
+      }
+      remove {
+        Remove (GameState.TimerStarted, value);
+      }
     }
 
 
-    public event EventHandler<GameStateEventArgs> TimerCompleted;
 
 
-    protected virtual void OnTimerCompleted (object sender, GameStateEventArgs e)
-    {
-      var handler = TimerCompleted;
-      if (handler != null)
-        handler (sender, e);
+
+    public event EventHandler<GameStateEventArgs> TimerCompleted {
+      add {
+        Add (GameState.TimerCompleted, value);
+      }
+      remove {
+        Remove (GameState.TimerCompleted, value);
+      }
     }
+
+
+
+    #endregion
+
+    #region Fades
+    public event EventHandler<GameStateEventArgs> FadeOutComplete {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.FadeOutComplete] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.FadeOutComplete] -= value;
+        }
+      }
+    }
+
+
+    public event EventHandler<GameStateEventArgs> ReadyForFadeOut {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.ReadyForFadeOut] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.ReadyForFadeOut] -= value;
+        }
+      }
+    }
+
+
+    public event EventHandler<GameStateEventArgs> FadeInComplete {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.FadeInComplete] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.FadeInComplete] -= value;
+        }
+      }
+    }
+
+
+    public event EventHandler<GameStateEventArgs> ReadyForFadeIn {
+      add {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.ReadyForFadeIn] += value;
+        }
+      }
+      remove {
+        lock (gameStateEvents) {
+          gameStateEvents [GameState.ReadyForFadeIn] -= value;
+        }
+      }
+    }
+
     #endregion
 
     //TODO More events should come here.
+
+    #region Helper classes
+    void Add (GameState state, EventHandler<GameStateEventArgs> handler)
+    {
+      lock (gameStateEvents) {
+        gameStateEvents [state] += handler;
+      }
+    }
+
+
+    void Remove (GameState state, EventHandler<GameStateEventArgs> handler)
+    {
+      lock (gameStateEvents) {
+        gameStateEvents [state] -= handler;
+      }
+    }
+    #endregion
   }
 
 
@@ -364,6 +441,10 @@ namespace Net.Xeophin.Utils
     /// </summary>
     PrepareShutdown,
     /// <summary>
+    /// Execute the actual shutdown - gives another hook to do stuff when shutting down.
+    /// </summary>
+    Shutdown,
+    /// <summary>
     /// The timer started.
     /// </summary>
     TimerStarted,
@@ -371,6 +452,12 @@ namespace Net.Xeophin.Utils
     /// A timer has run out of time.
     /// </summary>
     TimerCompleted
+  }
+
+
+  public interface IGameEventProvider
+  {
+    event EventHandler<GameStateEventArgs> PrepareShutdown;
   }
 }
 
