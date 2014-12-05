@@ -1,4 +1,5 @@
 using System.Reflection;
+using System;
 
 namespace Net.Xeophin.Utils
 {
@@ -57,7 +58,8 @@ namespace Net.Xeophin.Utils
     public string Version {
       get {
         if (version == null) {
-          version = Assembly.GetExecutingAssembly ().GetName ().Version.ToString ();
+          Version v = Assembly.GetExecutingAssembly ().GetName ().Version;
+          version = string.Format ("{0}.{1}.{2}", v.Major, v.Minor, v.Build);
         }
         return version;
       }
