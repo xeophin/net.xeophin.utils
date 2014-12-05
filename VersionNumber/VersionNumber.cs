@@ -15,13 +15,17 @@ namespace Net.Xeophin.Utils
     /// Can be set to true, in that case the version number will be shown in bottom right of the screen
     /// </summary>
     [SerializeField]
+    #if UNITY_4_5
     [Tooltip ("Can be set to true, in that case the version number will be shown in bottom right of the screen.")]
+    #endif
     bool showVersionInformation = false;
     /// <summary>
     /// Show the version during the first 20 seconds.
     /// </summary>
     [SerializeField]
+    #if UNITY_4_5
     [Tooltip ("Show the version during the first 20 seconds.")]
+    #endif
     bool showVersionDuringTheFirst20Seconds = true;
 
     /// <summary>
