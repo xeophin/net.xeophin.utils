@@ -15,13 +15,17 @@ namespace Net.Xeophin.Utils
     /// Can be set to true, in that case the version number will be shown in bottom right of the screen
     /// </summary>
     [SerializeField]
+    #if UNITY_4_5
     [Tooltip ("Can be set to true, in that case the version number will be shown in bottom right of the screen.")]
+    #endif
     bool showVersionInformation = false;
     /// <summary>
     /// Show the version during the first 20 seconds.
     /// </summary>
     [SerializeField]
+    #if UNITY_4_5
     [Tooltip ("Show the version during the first 20 seconds.")]
+    #endif
     bool showVersionDuringTheFirst20Seconds = true;
 
     /// <summary>
@@ -29,7 +33,7 @@ namespace Net.Xeophin.Utils
     /// </summary>
     Rect position = new Rect (0, 0, 100, 20);
 
-    VersionNumberController controller;
+    protected VersionNumberController Controller;
 
     #region MonoBehaviour
     void Start ()
@@ -37,7 +41,7 @@ namespace Net.Xeophin.Utils
       DontDestroyOnLoad (this);
 
       // Initiate the controller
-      controller = new VersionNumberController (this);
+      Controller = new VersionNumberController (this);
   
       // Log current version in log file
       Debug.Log (string.Format ("[VersionNumber] Currently running version is {0}", Label));
